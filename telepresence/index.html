@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Furhat Telepresence</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body></body>
+
+    <div id="controls">
+        <div class="panel-section">
+            <label for="ipInput" class="panel-label">Furhat Address:</label>
+            <input id="ipInput" type="text" value="127.0.0.1" class="panel-input"/>
+            <label for="authKeyInput" class="panel-label">Websocket API Auth Key:</label>
+            <input id="authKeyInput" type="text" class="panel-input"/>
+            <button id="connectButton" class="panel-button">Connect</button>
+        </div>
+        <div class="panel-section">
+            <div class="webcam-container">
+                <video id="webcam" autoplay playsinline></video>
+                <canvas id="webcam_overlay"></canvas>
+            </div>
+            <div id="vadLevelIndicator"></div>
+        </div>
+        <div class="panel-section">
+            <label class="panel-checkbox">
+                <input type="checkbox" id="webcamCheckbox">
+                Track my face
+            </label>
+            <label class="panel-checkbox">
+                <input type="checkbox" id="sendAudioCheckbox">
+                Send my audio
+            </label>
+            <label class="panel-checkbox">
+                <input type="checkbox" id="receiveAudioCheckbox">
+                Replay audio from robot microphone
+            </label>
+            <label class="panel-checkbox">
+                <input type="checkbox" id="attendClosestCheckbox">
+                Attend closest user
+            </label>
+        </div>
+    </div>
+
+    <div id="robotcam_container">
+        <img id="robotcam"/>
+        <canvas id="robotcam_overlay"></canvas>
+    </div>
+
+    <script type="module" src="main.js"></script>
+
+</body>
+</html>

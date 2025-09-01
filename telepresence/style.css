@@ -1,0 +1,125 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+}
+
+#controls {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 340px;
+    height: 100vh;
+    background-color: #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 20;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    padding: 0;
+}
+
+.panel-section {
+    width: 90%;
+    margin: 16px 0 8px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.panel-label {
+    font-size: 14px;
+    margin-bottom: 2px;
+}
+
+.panel-input {
+    width: 100%;
+    padding: 4px;
+    margin-bottom: 6px;
+    box-sizing: border-box;
+}
+
+.panel-button {
+    width: 100%;
+    padding: 6px;
+    margin-top: 4px;
+    background: #1976d2;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+.panel-button:disabled {
+    background: #aaa;
+    cursor: default;
+}
+
+.webcam-container {
+    position: relative;
+    width: 304px;
+    height: 228px;
+    margin: 0 auto 0px auto;
+    background: #222;
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid #ccc;
+}
+
+#webcam, #webcam_overlay {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+}
+
+.panel-checkbox {
+    display: flex;
+    align-items: center;
+    font-size: 15px;
+    margin-bottom: 8px;
+    gap: 8px;
+}
+
+#vadLevelIndicator {
+    width: 15px;
+    height: 10px;
+    background-color: lightgray;
+    border-radius: 3px;
+    margin-top: 8px;
+    transition: background-color 0.1s ease-in-out;
+}
+
+#speakingIndicator {
+    margin-top: 8px;
+    font-size: 22px;
+    text-align: center;
+}
+
+#robotcam_container {
+    position: absolute;
+    left: 340px;
+    top: 0;
+    width: calc(100% - 340px);
+    height: 100vh;
+    display: flex;
+}
+
+#robotcam {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 1px solid black;
+    box-sizing: border-box;
+    transform: scaleX(-1);
+}
+
+#robotcam_overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
