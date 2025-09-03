@@ -25,7 +25,7 @@ while True:
     print("Robot: ", robot_utt)
     messages.append({"role": "assistant", "content": robot_utt})
     furhat.request_speak_text(robot_utt)
-    user_utt = furhat.request_listen()
+    user_utt = furhat.request_listen_start()
     print("User: ", user_utt)
     messages.append({"role": "user", "content": user_utt})
     response = openai.chat.completions.create(model=model, messages=messages)

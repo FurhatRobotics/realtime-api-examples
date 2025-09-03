@@ -4,7 +4,7 @@ import asyncio
 import websockets
 import signal
 from dotenv import load_dotenv
-from furhat_ws_api import *
+from furhat_ws_api import AsyncFurhatClient, Events
 
 class OpenAIRealtimeFurhatBridge:
     def __init__(self, host: str = "127.0.0.1", auth_key = None):

@@ -5,7 +5,7 @@ import os
 import logging
 import signal
 from dotenv import load_dotenv
-from furhat_ws_api import *
+from furhat_ws_api import AsyncFurhatClient, Events
 
 load_dotenv(override=True)
 
