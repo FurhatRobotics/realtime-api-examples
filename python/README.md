@@ -18,4 +18,10 @@ There are a couple of examples in this repo:
 - `openai_simple.py` – A simple synchronous chatbot loop using OpenAI and Furhat.
 - `openai_async.py` – An asynchronous chatbot using OpenAI and Furhat, handling events with asyncio. This allows for somewhat better turn-taking with less interruptions. 
 - `openai_realtime.py` – A bridge between OpenAI's realtime voice interaction and Furhat using the audio send/recieve endpoints. 
+- `openai_realtime_vision.py` – Same as `openai_realtime.py`, but with vision capabilities. Images captured by the robot are sent to the realtime voice interaction model.
 
+For all examples. you can provide the host (ip address) of the robot (default `127.0.0.1`, for SDK), as well as an optional authentication key (depending on the WebSocket security settings) as command-line arguments. For example:
+
+```
+python hello_world --host=192.168.0.52 --auth_key==mykey123
+```

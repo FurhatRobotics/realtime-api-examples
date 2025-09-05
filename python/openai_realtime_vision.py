@@ -23,10 +23,12 @@ class OpenAIRealtimeFurhatBridge:
         self.instruction = "You are a friendly robot speaking English, looking for a nice little chat."
         self.stop_event = asyncio.Event()
         self.shutting_down = False
+        self.camera_image = None
         self.furhat = AsyncFurhatClient(self.host, auth_key=auth_key)
         #self.furhat.set_logging_level(logging.DEBUG)
         self.furhat.add_handler(Events.response_speak_end, self.furhat_speak_end)
         self.furhat.add_handler(Events.response_audio_data, self.furhat_microphone_data)
+        self.furhat.add_handler(Events.response_camera_data, self.furhat_camera_data)
 
     def setup_signal_handlers(self):
         """Setup signal handlers for graceful shutdown"""
@@ -45,7 +47,6 @@ class OpenAIRealtimeFurhatBridge:
         
         self.shutting_down = True
         print("Initiating shutdown...")
-        
         try:
             await self.furhat.request_audio_stop()
             await self.furhat.request_speak_stop()
@@ -66,6 +67,25 @@ class OpenAIRealtimeFurhatBridge:
             await self.ws.send(json.dumps({
                 "type": "input_audio_buffer.append",
                 "audio": data.get("microphone")
+            }))
+
+    async def furhat_camera_data(self, data):
+        self.camera_image = data.get("image")
+
+    async def user_speech_started(self):
+        if self.camera_image:
+            await self.ws.send(json.dumps({
+                "type": "conversation.item.create",
+                "item": {
+                    "type": "message",
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "input_image",
+                            "image_url": "data:image/jpg;base64," + self.camera_image
+                        }
+                    ]
+                }
             }))
 
     async def session_created(self):
@@ -132,6 +152,8 @@ class OpenAIRealtimeFurhatBridge:
                         await self.response_audio_delta(data)
                     elif data.get("type") == "response.audio.done":
                         await self.response_audio_done(data)
+                    elif data.get("type") == "input_audio_buffer.speech_started":
+                        await self.user_speech_started()
                     elif data.get("type") == "error":
                         print("Error from OpenAI:", data)
                 except asyncio.TimeoutError:
@@ -149,7 +171,9 @@ class OpenAIRealtimeFurhatBridge:
         except Exception as e:
             print(f"Failed to connect to Furhat on {self.host}.")
             exit(0)
-        
+
+        await self.furhat.request_camera_start()
+
         try:
             await self.websocket_handler()
         except Exception as e:
