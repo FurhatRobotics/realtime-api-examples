@@ -325,6 +325,7 @@ html, body {
   .pip{ right: 12px; top: 12px; 
   .webcam-container{ width: min(42vw, 320px); }
 }
+}
 
 :focus-visible{ outline: 2px solid rgba(122,174,247,.9); outline-offset: 2px; border-radius: 12px; }
 
