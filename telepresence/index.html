@@ -47,6 +47,21 @@
     </div>
   </section>
 
+
+  <!-- Disconnect confirm modal -->
+  <section id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" hidden>
+    <div class="connect-backdrop" data-close></div>
+    <div class="connect-modal" role="document">
+      <h2 id="confirmTitle">Disconnect from Furhat?</h2>
+      <p style="margin: 8px 2px 12px; color:#c9d1df;">Your audio/video and tracking will stop.</p>
+      <div class="row actions">
+        <button id="confirmCancel" class="ghost" data-close>Cancel</button>
+        <button id="confirmDisconnect" class="primary dangerish">Disconnect</button>
+      </div>
+    </div>
+  </section>
+
+
     <!-- Controls -->
 
     <div id="controls" role="toolbar" aria-label="Telepresence controls">
@@ -117,6 +132,38 @@
     openConnectModal();                    // show on first load
     window.closeConnectModal = closeConnectModal;
     document.getElementById('btnSettings')?.addEventListener('click', openConnectModal);
+
+    // --- Disconnect confirm modal ---
+    const confirmModal = document.getElementById('confirmModal');
+    const confirmCancel = document.getElementById('confirmCancel');
+    const confirmDisconnect = document.getElementById('confirmDisconnect');
+
+    function openConfirmModal() {
+      confirmModal.hidden = false;
+      document.body.style.overflow = 'hidden';
+      requestAnimationFrame(() => confirmDisconnect?.focus());
+    }
+    function closeConfirmModal() {
+      confirmModal.hidden = true;
+      document.body.style.overflow = '';
+    }
+    confirmModal.addEventListener('click', (e) => {
+      if (e.target.hasAttribute('data-close')) closeConfirmModal();
+    });
+    window.addEventListener('keydown', (e) => {
+      if (!confirmModal.hidden && e.key === 'Escape') closeConfirmModal();
+    });
+
+    confirmCancel?.addEventListener('click', closeConfirmModal);
+    confirmDisconnect?.addEventListener('click', () => {
+      // Reuse your existing disconnect path by clicking the Connect button when it shows "Disconnect"
+      const connectBtn = document.getElementById('connectButton');
+      if (connectBtn && /disconnect/i.test((connectBtn.textContent || connectBtn.value || '').trim())) {
+        connectBtn.click();
+      }
+      closeConfirmModal();
+    });
+
   
     // --- Elements (define BEFORE using them!)
     const el = {
@@ -140,15 +187,20 @@
       }
     };
   
-    // --- Hangup uses existing Connect/Disconnect flow
-    function performDisconnect() {
-      const connectBtn = document.getElementById('connectButton');
-      if (!connectBtn) return;
-      const txt = (connectBtn.textContent || connectBtn.value || '').trim().toLowerCase();
-      // click when in a disconnecting/connected state
-      if (txt.includes('disconnect')) connectBtn.click();
-    }
-    el.btnHangup?.addEventListener('click', performDisconnect);
+      // --- Hangup uses confirm modal
+      function performDisconnect() {
+        const connectBtn = document.getElementById('connectButton');
+        if (!connectBtn) return;
+        const txt = (connectBtn.textContent || connectBtn.value || '').trim().toLowerCase();
+
+        if (txt.includes('disconnect')) {
+          openConfirmModal();       // ask first
+        } else {
+          openConnectModal();       // not connected yet -> open connect dialog
+        }
+      }
+      el.btnHangup?.addEventListener('click', performDisconnect);
+
   
     // --- Canvas sizing
     const sizeAll = () => {
