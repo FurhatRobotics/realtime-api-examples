@@ -50,15 +50,15 @@ html, body {
   width: 100%;
   height: 100%;
   display: block;
-  transform: scaleX(-1);
   object-fit: contain; /* critical: use same fit on both */
   object-position: center;
 }
 
 #robotcam_overlay {
+  transform: scaleX(-1);
+  position: absolute;
   pointer-events: auto;       
   cursor: crosshair;            
-       
   transform-origin: center;
   z-index: 10;
 }

@@ -100,6 +100,7 @@
 
   <script type="module" src="main.js"></script>
   <script type="module">
+
     // === Minimal UI wiring ===
     function fitCanvasTo(el, canvas){
       const r = el.getBoundingClientRect();
@@ -110,13 +111,7 @@
       canvas.style.height = r.height + 'px';
     }
 
-    function mapOverlayClickToImageNorm(e) {
-      const rect = el.robotOverlay.getBoundingClientRect();
-      let nx = (e.clientX - rect.left) / rect.width;
-      let ny = (e.clientY - rect.top)  / rect.height;
-      nx = 1 - nx; // <-- THIS LINE flips the X to account for the mirrored display
-      return { x: Math.min(Math.max(nx, 0), 1), y: Math.min(Math.max(ny, 0), 1) };
-    }
+
 
   
     // --- Centered connect modal control ---
@@ -165,7 +160,6 @@
 
     confirmCancel?.addEventListener('click', closeConfirmModal);
     confirmDisconnect?.addEventListener('click', () => {
-      // Reuse your existing disconnect path by clicking the Connect button when it shows "Disconnect"
       const connectBtn = document.getElementById('connectButton');
       if (connectBtn && /disconnect/i.test((connectBtn.textContent || connectBtn.value || '').trim())) {
         connectBtn.click();
@@ -173,8 +167,6 @@
       closeConfirmModal();
     });
 
-  
-    // --- Elements (define BEFORE using them!)
     const el = {
       robot: document.getElementById('robotcam'),
       robotOverlay: document.getElementById('robotcam_overlay'),
@@ -195,8 +187,16 @@
         attend: document.getElementById('attendClosestCheckbox'),
       }
     };
+
+    function mapOverlayClickToImageNorm(e) {
+      const rect = el.robotOverlay.getBoundingClientRect();
+      let nx = (e.clientX - rect.left) / rect.width;
+      let ny = (e.clientY - rect.top)  / rect.height;
+     // <-- THIS LINE flips the X to account for the mirrored display
+      return { x: Math.min(Math.max(nx, 0), 1), y: Math.min(Math.max(ny, 0), 1) };
+    }
   
-      // --- Hangup uses confirm modal
+      // --- Disconnect confirm modal
       function performDisconnect() {
         const connectBtn = document.getElementById('connectButton');
         if (!connectBtn) return;
@@ -240,12 +240,10 @@
     wireButtonToCheckbox(el.btnAttend,  el.toggles.attend);
     wireButtonToCheckbox(el.btnSpeaker, el.toggles.recvAudio);
   
-    // (Removed old drawer code — it referenced nulls and wasn’t used)
   </script>
 
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <script>
-  // hydrate icons on load (and re-run if you dynamically add buttons later)
   window.addEventListener('DOMContentLoaded', () => lucide.createIcons());
 </script>
 
