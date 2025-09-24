@@ -51,22 +51,22 @@
 
     <div id="controls" role="toolbar" aria-label="Telepresence controls">
       <!-- Left: Disconnect -->
-        <button class="ctrl-btn danger" id="btnHangup" title="Disconnect (H)">
+        <button class="ctrl-btn danger" id="btnHangup" title="Disconnect">
           <i data-lucide="screen-share-off" aria-hidden="true"></i>
         </button>
-        <button class="ctrl-btn toggle" id="btnMic" title="Toggle mic (M)" aria-pressed="false">
+        <button class="ctrl-btn toggle" id="btnMic" title="Toggle mic" aria-pressed="false">
           <i data-lucide="mic" aria-hidden="true"></i>
         </button>
-        <button class="ctrl-btn toggle" id="btnFace" title="Track my face (C)" aria-pressed="false">
+        <button class="ctrl-btn toggle" id="btnFace" title="Track my face" aria-pressed="false">
           <i data-lucide="scan-face" aria-hidden="true"></i>
         </button>
-        <button class="ctrl-btn toggle" id="btnAttend" title="Attend closest user (A)" aria-pressed="false">
+        <button class="ctrl-btn toggle" id="btnAttend" title="Attend closest user" aria-pressed="false">
           <i data-lucide="user-star" aria-hidden="true"></i>
         </button>
-        <button class="ctrl-btn toggle" id="btnSpeaker" title="Replay robot mic (R)" aria-pressed="false">
+        <button class="ctrl-btn toggle" id="btnSpeaker" title="Replay robot mic" aria-pressed="false">
           <i data-lucide="volume-2" aria-hidden="true"></i>
         </button>
-        <button class="ctrl-btn" id="btnSettings" title="Connection (S)">
+        <button class="ctrl-btn" id="btnSettings" title="Connection">
           <i data-lucide="settings" aria-hidden="true"></i>
         </button>
     </div>
@@ -94,44 +94,31 @@
       canvas.style.width = r.width + 'px';
       canvas.style.height = r.height + 'px';
     }
-
+  
     // --- Centered connect modal control ---
     const connectModal = document.getElementById('connectModal');
     const ipEl = document.getElementById('ipInput');
-
+  
     function openConnectModal() {
       connectModal.hidden = false;
-      document.body.style.overflow = 'hidden'; // prevent background scroll
-      // Focus IP field on next frame
+      document.body.style.overflow = 'hidden';
       requestAnimationFrame(() => ipEl && ipEl.focus());
     }
-
     function closeConnectModal() {
       connectModal.hidden = true;
       document.body.style.overflow = '';
     }
-
     connectModal.addEventListener('click', (e) => {
       if (e.target.hasAttribute('data-close')) closeConnectModal();
     });
-
     window.addEventListener('keydown', (e) => {
       if (!connectModal.hidden && e.key === 'Escape') closeConnectModal();
     });
-
-    // Open on first load
-    openConnectModal();
-
-    // Expose so your connection code can close it when connected
+    openConnectModal();                    // show on first load
     window.closeConnectModal = closeConnectModal;
-
-    // Make the existing Settings button open the same modal
     document.getElementById('btnSettings')?.addEventListener('click', openConnectModal);
-
-    // OPTIONAL: if your main.js can notify on connect, auto-close:
-    // window.addEventListener('furhat:connected', closeConnectModal);
-
   
+    // --- Elements (define BEFORE using them!)
     const el = {
       robot: document.getElementById('robotcam'),
       robotOverlay: document.getElementById('robotcam_overlay'),
@@ -145,77 +132,54 @@
       btnSettings: document.getElementById('btnSettings'),
       btnHangup: document.getElementById('btnHangup'),
   
-      drawer: document.getElementById('drawer'),
-      drawerClose: document.getElementById('drawerClose'),
-
-  
-      // Hidden checkboxes (must exist before this script runs)
       toggles: {
         face: document.getElementById('webcamCheckbox'),
         sendAudio: document.getElementById('sendAudioCheckbox'),
         recvAudio: document.getElementById('receiveAudioCheckbox'),
         attend: document.getElementById('attendClosestCheckbox'),
       }
-
-      
     };
   
+    // --- Hangup uses existing Connect/Disconnect flow
+    function performDisconnect() {
+      const connectBtn = document.getElementById('connectButton');
+      if (!connectBtn) return;
+      const txt = (connectBtn.textContent || connectBtn.value || '').trim().toLowerCase();
+      // click when in a disconnecting/connected state
+      if (txt.includes('disconnect')) connectBtn.click();
+    }
+    el.btnHangup?.addEventListener('click', performDisconnect);
+  
+    // --- Canvas sizing
     const sizeAll = () => {
-      fitCanvasTo(el.robot, el.robotOverlay);
-      fitCanvasTo(el.webcam, el.webcamOverlay);
+      if (el.robot && el.robotOverlay) fitCanvasTo(el.robot, el.robotOverlay);
+      if (el.webcam && el.webcamOverlay) fitCanvasTo(el.webcam, el.webcamOverlay);
     };
     window.addEventListener('load', sizeAll);
     window.addEventListener('resize', sizeAll);
   
-    // Button <-> Checkbox bridge: single source of truth
+    // --- Button <-> Checkbox bridge
     function wireButtonToCheckbox(btn, checkbox) {
       if (!btn || !checkbox) return;
-  
-      // reflect initial state
       const setPressed = (on) => {
         btn.setAttribute('aria-pressed', String(on));
         btn.classList.toggle('is-off', !on);
       };
       setPressed(checkbox.checked);
-  
-      // button click -> flip checkbox + dispatch events
       btn.addEventListener('click', () => {
         checkbox.checked = !checkbox.checked;
         setPressed(checkbox.checked);
         checkbox.dispatchEvent(new Event('input', { bubbles: true }));
         checkbox.dispatchEvent(new Event('change', { bubbles: true }));
       });
-  
-      // external changes -> sync button
       checkbox.addEventListener('change', () => setPressed(checkbox.checked));
     }
+    wireButtonToCheckbox(el.btnMic,     el.toggles.sendAudio);
+    wireButtonToCheckbox(el.btnFace,    el.toggles.face);
+    wireButtonToCheckbox(el.btnAttend,  el.toggles.attend);
+    wireButtonToCheckbox(el.btnSpeaker, el.toggles.recvAudio);
   
-    // Map icons → your checkboxes (features)
-    wireButtonToCheckbox(el.btnMic,     el.toggles.sendAudio); // Send my audio
-    wireButtonToCheckbox(el.btnFace,    el.toggles.face);      // Track my face
-    wireButtonToCheckbox(el.btnAttend,  el.toggles.attend);    // Attend closest user
-    wireButtonToCheckbox(el.btnSpeaker, el.toggles.recvAudio); // Replay robot mic
-  
-    // Drawer (connection only)
-    const openDrawer = () => { el.drawer.setAttribute('aria-hidden', 'false'); document.body.classList.add('drawer-open'); };
-    const closeDrawer = () => { el.drawer.setAttribute('aria-hidden', 'true');  document.body.classList.remove('drawer-open'); };
-    el.btnSettings.addEventListener('click', openDrawer);
-    el.drawerClose.addEventListener('click', closeDrawer);
-    el.drawer.addEventListener('click', (e) => { if (e.target === el.drawer) closeDrawer(); });
-  
-    // Keyboard shortcuts
-    window.addEventListener('keydown', (e) => {
-      if (['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
-      switch (e.key.toLowerCase()) {
-        case 'm': el.btnMic.click(); break;
-        case 'c': el.btnFace.click(); break;
-        case 'a': el.btnAttend.click(); break;
-        case 'r': el.btnSpeaker.click(); break;
-        case 's': openDrawer(); break;
-        case 'h': el.btnHangup.click(); break; // disconnect
-        case 'escape': closeDrawer(); break;
-      }
-    });
+    // (Removed old drawer code — it referenced nulls and wasn’t used)
   </script>
 
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
