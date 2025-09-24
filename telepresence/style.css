@@ -1,125 +1,234 @@
-body {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
+:root{
+  --glass-bg: rgba(20, 22, 30, .55);
+  --glass-brd: rgba(255,255,255,.16);
+  --text: #eef2f7;
+  --text-dim: #c9d1df;
+  --accent: #7aaef7;
+  --danger: #ef4f4f;
+  --ok: #22c55e;
+  --shadow: 0 10px 34px rgba(0,0,0,.45);
+  --radius: 18px;
 }
 
-#controls {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 340px;
-    height: 100vh;
-    background-color: #f0f0f0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    z-index: 20;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-    padding: 0;
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background: #000; color: var(--text);
+  font: 500 15px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial;
 }
 
-.panel-section {
-    width: 90%;
-    margin: 16px 0 8px 0;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-}
-
-.panel-label {
-    font-size: 14px;
-    margin-bottom: 2px;
-}
-
-.panel-input {
-    width: 100%;
-    padding: 4px;
-    margin-bottom: 6px;
-    box-sizing: border-box;
-}
-
-.panel-button {
-    width: 100%;
-    padding: 6px;
-    margin-top: 4px;
-    background: #1976d2;
-    color: #fff;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    font-size: 15px;
-}
-
-.panel-button:disabled {
-    background: #aaa;
-    cursor: default;
-}
-
-.webcam-container {
-    position: relative;
-    width: 304px;
-    height: 228px;
-    margin: 0 auto 0px auto;
-    background: #222;
-    border-radius: 4px;
-    overflow: hidden;
-    border: 1px solid #ccc;
-}
-
-#webcam, #webcam_overlay {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    left: 0;
-    top: 0;
-}
-
-.panel-checkbox {
-    display: flex;
-    align-items: center;
-    font-size: 15px;
-    margin-bottom: 8px;
-    gap: 8px;
-}
-
-#vadLevelIndicator {
-    width: 15px;
-    height: 10px;
-    background-color: lightgray;
-    border-radius: 3px;
-    margin-top: 8px;
-    transition: background-color 0.1s ease-in-out;
-}
-
-#speakingIndicator {
-    margin-top: 8px;
-    font-size: 22px;
-    text-align: center;
-}
+/* === Fullscreen stage === */
+#stage { position: fixed; inset: 0; overflow: hidden; }
+#robotcam_container { position: absolute; inset: 0; background: #000; }
 
 #robotcam_container {
-    position: absolute;
-    left: 340px;
-    top: 0;
-    width: calc(100% - 340px);
-    height: 100vh;
-    display: flex;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: black;
 }
 
-#robotcam {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border: 1px solid black;
-    box-sizing: border-box;
-    transform: scaleX(-1);
+#robotcam_wrapper {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+
+#robotcam, #robotcam_overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain; /* critical: use same fit on both */
+  object-position: center;
 }
 
 #robotcam_overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+  pointer-events: none;
+  transform: scaleX(-1);
+  transform-origin: center;
+  z-index: 10;
 }
+
+
+/* --- Centered connect modal --- */
+#connectModal[hidden] { display: none; }
+
+#connectModal {
+  position: fixed;
+  inset: 0;
+  z-index: 100; /* above controls & PiP */
+  display: grid;
+  place-items: center;
+}
+
+#connectModal .connect-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+#connectModal .connect-modal {
+  position: relative;
+  width: min(560px, 92vw);
+  border-radius: 18px;
+  padding: 18px 18px 22px;
+  background: rgba(22,24,32,.92);
+  border: 1px solid rgba(255,255,255,.16);
+  box-shadow: 0 20px 50px rgba(0,0,0,.55);
+  color: #eef2f7;
+}
+
+#connectModal h2 {
+  margin: 4px 2px 12px;
+  font-size: 18px;
+}
+
+#connectModal .row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 10px;
+  align-items: center;
+  margin: 10px 0;
+}
+
+#connectModal .row.actions {
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+#connectModal label { color: #c9d1df; }
+
+#connectModal input {
+  appearance: none; outline: none;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.16);
+  color: #eef2f7;
+  border-radius: 10px; padding: 10px 12px; min-width: 160px;
+}
+
+#connectModal .primary {
+  appearance: none; padding: 10px 14px; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.2);
+  background: linear-gradient(180deg, rgba(91,144,247,.35), rgba(91,144,247,.15));
+  color: white; cursor: pointer;
+}
+
+#connectModal .ghost {
+  appearance: none; padding: 10px 14px; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.2);
+  background: transparent; color: #eef2f7; cursor: pointer;
+}
+
+
+
+/* PiP sits on top of video */
+.pip {
+  position: absolute; right: 18px; top: 18px; display: grid; gap: 8px; z-index: 20; /* ABOVE video */
+}
+.webcam-container {
+  position: relative; width: min(28vw, 360px); aspect-ratio: 16/9;
+  border-radius: 14px; overflow: hidden; background: #111;
+  border: 1px solid rgba(255,255,255,.08); box-shadow: var(--shadow);
+}
+.webcam-container > video, .webcam-container > canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+}
+.webcam-container > video { object-fit: cover; object-position: center; }
+
+#vadLevelIndicator {
+  height: 6px; width: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--ok));
+  box-shadow: 0 0 14px rgba(122,174,247,.55);
+  opacity: .25; transition: opacity .2s ease, transform .2s ease;
+}
+
+/* === Bottom controls: fixed, compact, not covering height === */
+#controls{
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: 16px; 
+
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center;
+  gap: 12px; padding: 10px 12px; height: auto;  /* prevent full-height */
+  border-radius: var(--radius);
+  background: var(--glass-bg); backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid var(--glass-brd); box-shadow: var(--shadow);
+  z-index: 30; /* ABOVE PiP if needed */
+}
+
+.controls-center { display: flex; justify-content: center; gap: 10px; }
+
+/* Buttons */
+.ctrl-btn{
+  appearance: none; cursor: pointer;
+  width: 44px; height: 44px; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.18);
+  background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.06));
+  display: inline-grid; place-items: center;
+  transition: transform .05s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease, opacity .2s ease;
+  color: var(--text);
+}
+.ctrl-btn:hover { box-shadow: 0 6px 18px rgba(0,0,0,.35); border-color: rgba(255,255,255,.28); }
+.ctrl-btn:active { transform: translateY(1px); }
+.ctrl-btn svg { width: 22px; height: 22px; fill: currentColor; }
+.ctrl-btn.danger { background: rgba(239,79,79,.18); border-color: rgba(239,79,79,.35); color: #ffd5d5; }
+.ctrl-btn.danger:hover { background: rgba(239,79,79,.28); }
+
+/* Toggle show/hide */
+.toggle[aria-pressed="true"] .off { display: none; }
+.toggle[aria-pressed="false"] .on  { display: none; }
+.is-off { opacity: .65; }
+
+/* === Drawer: connection only === */
+#drawer{
+  position: fixed; inset: 0; background: rgba(0,0,0,.35);
+  backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+  opacity: 0; pointer-events: none; transition: opacity .2s ease; z-index: 40;
+}
+#drawer[aria-hidden="false"]{ opacity: 1; pointer-events: auto; }
+.drawer-inner{
+  position: absolute; left: 50%; transform: translateX(-50%);
+  bottom: calc(-100%); width: min(900px, 96%); max-height: 70vh; overflow: auto;
+  background: rgba(22,24,32,.9); border: 1px solid var(--glass-brd);
+  border-radius: 18px 18px 0 0; padding: 18px 18px 22px; box-shadow: var(--shadow);
+  transition: bottom .25s ease;
+}
+#drawer[aria-hidden="false"] .drawer-inner{ bottom: 0; }
+.drawer-inner h2{ margin: 10px 2px; font-size: 16px; color: var(--text); }
+.drawer-inner .row{ display: grid; grid-template-columns: 160px 1fr; gap: 10px; align-items: center; margin: 8px 0; }
+.drawer-inner .row.actions{ grid-template-columns: 1fr auto auto; gap: 12px; }
+.drawer-inner label{ color: var(--text-dim); }
+.drawer-inner input{
+  appearance: none; outline: none; background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.16); color: var(--text);
+  border-radius: 10px; padding: 10px 12px; min-width: 160px;
+}
+.drawer-inner .primary{
+  appearance: none; padding: 10px 14px; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.2);
+  background: linear-gradient(180deg, rgba(91,144,247,.35), rgba(91,144,247,.15));
+  color: white; cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 840px){
+  #controls{ width: calc(100% - 16px); bottom: 12px; gap: 8px; }
+  .pip{ right: 12px; top: 12px; }
+  .webcam-container{ width: min(42vw, 320px); }
+}
+
+:focus-visible{ outline: 2px solid rgba(122,174,247,.9); outline-offset: 2px; border-radius: 12px; }

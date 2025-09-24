@@ -2,55 +2,248 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Furhat Telepresence</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Furhat Telepresence</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 
-<body></body>
+<body>
 
-    <div id="controls">
-        <div class="panel-section">
-            <label for="ipInput" class="panel-label">Furhat Address:</label>
-            <input id="ipInput" type="text" value="127.0.0.1" class="panel-input"/>
-            <label for="authKeyInput" class="panel-label">Websocket API Auth Key:</label>
-            <input id="authKeyInput" type="text" class="panel-input"/>
-            <button id="connectButton" class="panel-button">Connect</button>
-        </div>
-        <div class="panel-section">
-            <div class="webcam-container">
-                <video id="webcam" autoplay playsinline></video>
-                <canvas id="webcam_overlay"></canvas>
-            </div>
-            <div id="vadLevelIndicator"></div>
-        </div>
-        <div class="panel-section">
-            <label class="panel-checkbox">
-                <input type="checkbox" id="webcamCheckbox">
-                Track my face
-            </label>
-            <label class="panel-checkbox">
-                <input type="checkbox" id="sendAudioCheckbox">
-                Send my audio
-            </label>
-            <label class="panel-checkbox">
-                <input type="checkbox" id="receiveAudioCheckbox">
-                Replay audio from robot microphone
-            </label>
-            <label class="panel-checkbox">
-                <input type="checkbox" id="attendClosestCheckbox">
-                Attend closest user
-            </label>
-        </div>
-    </div>
-
+  <!-- Fullscreen robot video -->
+  <main id="stage" aria-label="Robot camera">
     <div id="robotcam_container">
-        <img id="robotcam"/>
-        <canvas id="robotcam_overlay"></canvas>
+      <img id="robotcam" />
+      <canvas id="robotcam_overlay"></canvas>
     </div>
 
-    <script type="module" src="main.js"></script>
+    <!-- Self-view PiP on top -->
+    <aside class="pip">
+      <div class="webcam-container">
+        <video id="webcam" autoplay playsinline muted></video>
+        <canvas id="webcam_overlay"></canvas>
+      </div>
+      <div id="vadLevelIndicator" aria-label="Voice activity meter"></div>
+    </aside>
+  </main>
 
+  <!-- Centered connection modal -->
+  <section id="connectModal" role="dialog" aria-modal="true" aria-labelledby="connectTitle" hidden>
+    <div class="connect-backdrop" data-close></div>
+    <div class="connect-modal" role="document">
+      <h2 id="connectTitle">Connect to Furhat</h2>
+      <div class="row">
+        <label for="ipInput">Furhat Address</label>
+        <input id="ipInput" type="text" value="127.0.0.1" autocomplete="off" />
+      </div>
+      <div class="row">
+        <label for="authKeyInput">Websocket API Auth Key</label>
+        <input id="authKeyInput" type="text" autocomplete="off" />
+      </div>
+      <div class="row actions">
+        <button id="connectButton" class="primary">Connect</button>
+        <button id="connectClose" class="ghost" data-close>Close</button>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Bottom glass control bar (fixed height) -->
+  <div id="controls" role="toolbar" aria-label="Telepresence controls">
+    <!-- Leave / Disconnect -->
+    <button class="ctrl-btn danger" id="btnHangup" title="Disconnect (H)">
+      <!-- phone hangup -->
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M21.7 13.3c.4.4.6 1 .5 1.6l-.5 3a2 2 0 0 1-2.2 1.7c-8.7-1.2-12.3-4.8-13.5-13.5A2 2 0 0 1 7.7 4l3-.5a2 2 0 0 1 1.6.5l2 2a2 2 0 0 1 .2 2.8L13 10.3a12.6 12.6 0 0 0 3.7 3.7l1.5-1.5a2 2 0 0 1 2.8.2l2.7 2.6Z"/>
+      </svg>
+    </button>
+
+    <!-- Center toggles -->
+    <div class="controls-center">
+      <!-- Microphone: controls 'send my audio' -->
+      <button class="ctrl-btn toggle" id="btnMic" title="Toggle mic (M)" aria-pressed="false">
+        <!-- mic -->
+        <svg class="on" viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z"/></svg>
+        <!-- mic off -->
+        <svg class="off" viewBox="0 0 24 24"><path d="M19 11a7 7 0 0 1-1.26 4l-1.46-1.46A5 5 0 0 0 17 11h2Zm-7 5a5 5 0 0 1-5-5H5a7 7 0 0 0 5.92 6.92V21h2v-3.08c.6-.1 1.18-.3 1.72-.56L12 16Zm3-5v-3.59L9.59 4 8.17 5.41 10 7.24V11a2 2 0 0 0 3.72 1.04L15 11Zm4.9 9.31-16-16 1.41-1.41 16 16-1.41 1.41Z"/></svg>
+      </button>
+
+      <!-- Face grid: controls 'track my face' -->
+      <button class="ctrl-btn toggle" id="btnFace" title="Track my face (C)" aria-pressed="false">
+        <!-- face grid on -->
+        <svg class="on" viewBox="0 0 24 24"><path d="M4 7V5a2 2 0 0 1 2-2h2v2H6v2H4Zm12-4h2a2 2 0 0 1 2 2v2h-2V5h-2V3ZM6 17v2h2v2H6a2 2 0 0 1-2-2v-2h2Zm12 0h2v2a2 2 0 0 1-2 2h-2v-2h2v-2ZM8 9h8v6H8V9Zm2 2v2h4v-2h-4Z"/></svg>
+        <!-- face grid off -->
+        <svg class="off" viewBox="0 0 24 24"><path d="M4 7V5a2 2 0 0 1 2-2h2v2H6v2H4Zm12-4h2a2 2 0 0 1 2 2v2h-2V5h-2V3ZM6 17v2h2v2H6a2 2 0 0 1-2-2v-2h2Zm12 0h2v2a2 2 0 0 1-2 2h-2v-2h2v-2ZM8 9h8v6H8V9Zm10.5 10.9L5.1 6.5 6.5 5.1l13.4 13.4-1.4 1.4Z"/></svg>
+      </button>
+
+      <!-- Attend closest user -->
+      <button class="ctrl-btn toggle" id="btnAttend" title="Attend closest user (A)" aria-pressed="false">
+        <!-- target on -->
+        <svg class="on" viewBox="0 0 24 24"><path d="M11 2v2.06A8 8 0 0 0 4.06 11H2v2h2.06A8 8 0 0 0 11 19.94V22h2v-2.06A8 8 0 0 0 19.94 13H22v-2h-2.06A8 8 0 0 0 13 4.06V2h-2ZM12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8Z"/></svg>
+        <!-- target off -->
+        <svg class="off" viewBox="0 0 24 24"><path d="M3.5 2.1 21.9 20.6l-1.4 1.4-3.1-3.1A8 8 0 0 1 13 19.9V22h-2v-2.1A8 8 0 0 1 4.1 13H2v-2h2.1A8 8 0 0 1 11 4.1V2h2v2.1c.9.2 1.8.5 2.6.9L4.9 3.5 3.5 2.1Z"/></svg>
+      </button>
+
+      <!-- Speaker: replay robot mic -->
+      <button class="ctrl-btn toggle" id="btnSpeaker" title="Replay robot mic (R)" aria-pressed="false">
+        <!-- speaker on -->
+        <svg class="on" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4Zm11.5 3a4.5 4.5 0 0 1-1.3 3.2l1.4 1.4A6.5 6.5 0 0 0 19.5 12a6.5 6.5 0 0 0-3.9-5.9l-1.4 1.4A4.5 4.5 0 0 1 15.5 12Z"/></svg>
+        <!-- speaker off -->
+        <svg class="off" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4Zm14.7 7.3-3.4-3.4a4.5 4.5 0 0 0 .8-2.9 4.5 4.5 0 0 0-2.6-4l1.4-1.4A6.5 6.5 0 0 1 20 10.9l2.1 2.1-1.4 1.4-2-2v.1c0 1-.3 1.9-.8 2.8l2.3 2.3-1.5 1.7Z"/></svg>
+      </button>
+    </div>
+
+    <!-- Settings: connection only -->
+    <button class="ctrl-btn" id="btnSettings" title="Connection (S)">
+      <!-- gear -->
+      <svg viewBox="0 0 24 24"><path d="M12 8a4 4 0 1 1 0 8 4 4 0 0 1 0-8Zm9.4 4a7.4 7.4 0 0 0-.1-.9l2.1-1.7-2-3.5-2.6 1a7.6 7.6 0 0 0-1.6-.9l-.4-2.8h-4l-.4 2.8c-.6.2-1.1.5-1.6.9l-2.6-1-2 3.5 2.1 1.7a7.4 7.4 0 0 0-.1.9c0 .3 0 .6.1.9l-2.1 1.7 2 3.5 2.6-1c.5.4 1 .7 1.6.9l.4 2.8h4l.4-2.8c.6-.2 1.1-.5 1.6-.9l2.6 1 2-3.5-2.1-1.7c.1-.3.1-.6.1-.9Z"/></svg>
+    </button>
+  </div>
+    
+
+    <!-- Hidden feature toggles to keep existing main.js listeners working -->
+    <div aria-hidden="true" style="position:absolute; width:0; height:0; overflow:hidden;">
+        <input type="checkbox" id="webcamCheckbox" />
+        <input type="checkbox" id="sendAudioCheckbox" />
+        <input type="checkbox" id="receiveAudioCheckbox" />
+        <input type="checkbox" id="attendClosestCheckbox" />
+    </div>
+
+  <script type="module" src="main.js"></script>
+  <script type="module">
+    // === Minimal UI wiring ===
+    function fitCanvasTo(el, canvas){
+      const r = el.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(r.width * dpr);
+      canvas.height = Math.round(r.height * dpr);
+      canvas.style.width = r.width + 'px';
+      canvas.style.height = r.height + 'px';
+    }
+
+    // --- Centered connect modal control ---
+    const connectModal = document.getElementById('connectModal');
+    const ipEl = document.getElementById('ipInput');
+
+    function openConnectModal() {
+      connectModal.hidden = false;
+      document.body.style.overflow = 'hidden'; // prevent background scroll
+      // Focus IP field on next frame
+      requestAnimationFrame(() => ipEl && ipEl.focus());
+    }
+
+    function closeConnectModal() {
+      connectModal.hidden = true;
+      document.body.style.overflow = '';
+    }
+
+    connectModal.addEventListener('click', (e) => {
+      if (e.target.hasAttribute('data-close')) closeConnectModal();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (!connectModal.hidden && e.key === 'Escape') closeConnectModal();
+    });
+
+    // Open on first load
+    openConnectModal();
+
+    // Expose so your connection code can close it when connected
+    window.closeConnectModal = closeConnectModal;
+
+    // Make the existing Settings button open the same modal
+    document.getElementById('btnSettings')?.addEventListener('click', openConnectModal);
+
+    // OPTIONAL: if your main.js can notify on connect, auto-close:
+    // window.addEventListener('furhat:connected', closeConnectModal);
+
+  
+    const el = {
+      robot: document.getElementById('robotcam'),
+      robotOverlay: document.getElementById('robotcam_overlay'),
+      webcam: document.getElementById('webcam'),
+      webcamOverlay: document.getElementById('webcam_overlay'),
+  
+      btnMic: document.getElementById('btnMic'),
+      btnFace: document.getElementById('btnFace'),
+      btnAttend: document.getElementById('btnAttend'),
+      btnSpeaker: document.getElementById('btnSpeaker'),
+      btnSettings: document.getElementById('btnSettings'),
+      btnHangup: document.getElementById('btnHangup'),
+  
+      drawer: document.getElementById('drawer'),
+      drawerClose: document.getElementById('drawerClose'),
+
+  
+      // Hidden checkboxes (must exist before this script runs)
+      toggles: {
+        face: document.getElementById('webcamCheckbox'),
+        sendAudio: document.getElementById('sendAudioCheckbox'),
+        recvAudio: document.getElementById('receiveAudioCheckbox'),
+        attend: document.getElementById('attendClosestCheckbox'),
+      }
+
+      
+    };
+  
+    const sizeAll = () => {
+      fitCanvasTo(el.robot, el.robotOverlay);
+      fitCanvasTo(el.webcam, el.webcamOverlay);
+    };
+    window.addEventListener('load', sizeAll);
+    window.addEventListener('resize', sizeAll);
+  
+    // Button <-> Checkbox bridge: single source of truth
+    function wireButtonToCheckbox(btn, checkbox) {
+      if (!btn || !checkbox) return;
+  
+      // reflect initial state
+      const setPressed = (on) => {
+        btn.setAttribute('aria-pressed', String(on));
+        btn.classList.toggle('is-off', !on);
+      };
+      setPressed(checkbox.checked);
+  
+      // button click -> flip checkbox + dispatch events
+      btn.addEventListener('click', () => {
+        checkbox.checked = !checkbox.checked;
+        setPressed(checkbox.checked);
+        checkbox.dispatchEvent(new Event('input', { bubbles: true }));
+        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+  
+      // external changes -> sync button
+      checkbox.addEventListener('change', () => setPressed(checkbox.checked));
+    }
+  
+    // Map icons → your checkboxes (features)
+    wireButtonToCheckbox(el.btnMic,     el.toggles.sendAudio); // Send my audio
+    wireButtonToCheckbox(el.btnFace,    el.toggles.face);      // Track my face
+    wireButtonToCheckbox(el.btnAttend,  el.toggles.attend);    // Attend closest user
+    wireButtonToCheckbox(el.btnSpeaker, el.toggles.recvAudio); // Replay robot mic
+  
+    // Drawer (connection only)
+    const openDrawer = () => { el.drawer.setAttribute('aria-hidden', 'false'); document.body.classList.add('drawer-open'); };
+    const closeDrawer = () => { el.drawer.setAttribute('aria-hidden', 'true');  document.body.classList.remove('drawer-open'); };
+    el.btnSettings.addEventListener('click', openDrawer);
+    el.drawerClose.addEventListener('click', closeDrawer);
+    el.drawer.addEventListener('click', (e) => { if (e.target === el.drawer) closeDrawer(); });
+  
+    // Keyboard shortcuts
+    window.addEventListener('keydown', (e) => {
+      if (['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+      switch (e.key.toLowerCase()) {
+        case 'm': el.btnMic.click(); break;
+        case 'c': el.btnFace.click(); break;
+        case 'a': el.btnAttend.click(); break;
+        case 'r': el.btnSpeaker.click(); break;
+        case 's': openDrawer(); break;
+        case 'h': el.btnHangup.click(); break; // disconnect
+        case 'escape': closeDrawer(); break;
+      }
+    });
+  </script>
+
+  
 </body>
 </html>
