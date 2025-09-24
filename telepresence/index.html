@@ -109,6 +109,15 @@
       canvas.style.width = r.width + 'px';
       canvas.style.height = r.height + 'px';
     }
+
+    function mapOverlayClickToImageNorm(e) {
+      const rect = el.robotOverlay.getBoundingClientRect();
+      let nx = (e.clientX - rect.left) / rect.width;
+      let ny = (e.clientY - rect.top)  / rect.height;
+      nx = 1 - nx; // <-- THIS LINE flips the X to account for the mirrored display
+      return { x: Math.min(Math.max(nx, 0), 1), y: Math.min(Math.max(ny, 0), 1) };
+    }
+
   
     // --- Centered connect modal control ---
     const connectModal = document.getElementById('connectModal');

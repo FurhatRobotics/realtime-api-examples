@@ -44,22 +44,25 @@ html, body {
 }
 
 
-#robotcam, #robotcam_overlay {
+#robotcam {
   position: absolute;
   top: 0; left: 0;
   width: 100%;
   height: 100%;
   display: block;
+  transform: scaleX(-1);
   object-fit: contain; /* critical: use same fit on both */
   object-position: center;
 }
 
 #robotcam_overlay {
-  pointer-events: none;
-  transform: scaleX(-1);
+  pointer-events: auto;       
+  cursor: crosshair;            
+       
   transform-origin: center;
   z-index: 10;
 }
+
 
 
 /* --- Centered connect modal --- */
@@ -319,7 +322,7 @@ html, body {
 /* Responsive */
 @media (max-width: 840px){
   #controls{ width: calc(100% - 16px); bottom: 12px; gap: 8px; }
-  .pip{ right: 12px; top: 12px; }
+  .pip{ right: 12px; top: 12px; 
   .webcam-container{ width: min(42vw, 320px); }
 }
 
