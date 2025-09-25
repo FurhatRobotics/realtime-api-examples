@@ -9,63 +9,59 @@
 </head>
 
 <body>
-
-  <!-- Fullscreen robot video -->
-  <main id="stage" aria-label="Robot camera">
-    <div id="robotcam_container">
-      <img id="robotcam" />
-      <canvas id="robotcam_overlay"></canvas>
-    </div>
+  
+    <!-- Fullscreen robot video -->
+    <main id="stage" aria-label="Robot camera">
+      <div id="robotcam_container">
+        <img id="robotcam" />
+        <canvas id="robotcam_overlay"></canvas>
+      </div>
 
     <!-- Self-view PiP on top -->
-    <aside class="pip">
-      <div class="webcam-container">
-        <video id="webcam" autoplay playsinline muted></video>
-        <canvas id="webcam_overlay"></canvas>
-      </div>
-      <div id="vadLevelIndicator" aria-label="Voice activity meter"></div>
-    </aside>
-  </main>
+      <aside class="pip">
+        <div class="webcam-container">
+          <video id="webcam" autoplay playsinline muted></video>
+          <canvas id="webcam_overlay"></canvas>
+        </div>
+        <div id="vadLevelIndicator" aria-label="Voice activity meter"></div>
+      </aside>
+    </main>
 
-  <!-- Centered connection modal -->
-  <section id="connectModal" role="dialog" aria-modal="true" aria-labelledby="connectTitle" hidden>
-    <div class="connect-backdrop" data-close></div>
-    <div class="connect-modal" role="document">
-      <h2 id="connectTitle">Connect to Furhat</h2>
-      <div class="row">
-        <label for="ipInput">Furhat Address</label>
-        <input id="ipInput" type="text" value="127.0.0.1" autocomplete="off" />
+    <!-- Centered connection modal -->
+    <section id="connectModal" role="dialog" aria-modal="true" aria-labelledby="connectTitle" hidden>
+      <div class="connect-backdrop" data-close></div>
+      <div class="connect-modal" role="document">
+        <h2 id="connectTitle">Connect to Furhat</h2>
+        <div class="row">
+          <label for="ipInput">Furhat Address</label>
+          <input id="ipInput" type="text" value="127.0.0.1" autocomplete="off" />
+        </div>
+        <div class="row">
+          <label for="authKeyInput">Websocket API Auth Key</label>
+          <input id="authKeyInput" type="text" autocomplete="off" />
+        </div>
+        <div class="row actions">
+          <button id="connectButton" class="primary">Connect</button>
+          <button id="connectClose" class="ghost" data-close>Close</button>
+        </div>
       </div>
-      <div class="row">
-        <label for="authKeyInput">Websocket API Auth Key</label>
-        <input id="authKeyInput" type="text" autocomplete="off" />
-      </div>
-      <div class="row actions">
-        <button id="connectButton" class="primary">Connect</button>
-        <button id="connectClose" class="ghost" data-close>Close</button>
-      </div>
-    </div>
-  </section>
+    </section>
 
-
-  <!-- Disconnect confirm modal -->
-  <section id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" hidden>
-    <div class="connect-backdrop" data-close></div>
-    <div class="connect-modal" role="document">
-      <h2 id="confirmTitle">Disconnect from Furhat?</h2>
-      <p style="margin: 8px 2px 12px; color:#c9d1df;">Your audio/video and tracking will stop.</p>
-      <div class="row actions">
-        <button id="confirmCancel" class="ghost" data-close>Cancel</button>
-        <button id="confirmDisconnect" class="primary dangerish">Disconnect</button>
+    <!-- Disconnect confirm modal -->
+    <section id="confirmModal" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" hidden>
+      <div class="connect-backdrop" data-close></div>
+      <div class="connect-modal" role="document">
+        <h2 id="confirmTitle">Disconnect from Furhat?</h2>
+        <p style="margin: 8px 2px 12px; color:#c9d1df;">Your audio/video and tracking will stop.</p>
+        <div class="row actions">
+          <button id="confirmCancel" class="ghost" data-close>Cancel</button>
+          <button id="confirmDisconnect" class="primary dangerish">Disconnect</button>
+        </div>
       </div>
-    </div>
-  </section>
-
+    </section>
 
     <!-- Controls -->
-
     <div id="controls" role="toolbar" aria-label="Telepresence controls">
-      <!-- Left: Disconnect -->
         <button class="ctrl-btn danger" id="btnHangup" title="Disconnect">
           <i data-lucide="screen-share-off" aria-hidden="true"></i>
         </button>
@@ -85,8 +81,6 @@
           <i data-lucide="settings" aria-hidden="true"></i>
         </button>
     </div>
-    
-    
 
     <!-- Hidden feature toggles to keep existing main.js listeners working -->
     <div aria-hidden="true" style="position:absolute; width:0; height:0; overflow:hidden;">
@@ -96,148 +90,11 @@
         <input type="checkbox" id="attendClosestCheckbox" />
     </div>
 
-
-
   <script type="module" src="main.js"></script>
-  <script type="module">
-
-    // === Minimal UI wiring ===
-    function fitCanvasTo(el, canvas){
-      const r = el.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = Math.round(r.width * dpr);
-      canvas.height = Math.round(r.height * dpr);
-      canvas.style.width = r.width + 'px';
-      canvas.style.height = r.height + 'px';
-    }
-  
-    // --- Centered connect modal control ---
-    const connectModal = document.getElementById('connectModal');
-    const ipEl = document.getElementById('ipInput');
-  
-    function openConnectModal() {
-      connectModal.hidden = false;
-      document.body.style.overflow = 'hidden';
-      requestAnimationFrame(() => ipEl && ipEl.focus());
-    }
-    function closeConnectModal() {
-      connectModal.hidden = true;
-      document.body.style.overflow = '';
-    }
-    connectModal.addEventListener('click', (e) => {
-      if (e.target.hasAttribute('data-close')) closeConnectModal();
-    });
-    window.addEventListener('keydown', (e) => {
-      if (!connectModal.hidden && e.key === 'Escape') closeConnectModal();
-    });
-    openConnectModal();                    // show on first load
-    window.closeConnectModal = closeConnectModal;
-    document.getElementById('btnSettings')?.addEventListener('click', openConnectModal);
-
-    // --- Disconnect confirm modal ---
-    const confirmModal = document.getElementById('confirmModal');
-    const confirmCancel = document.getElementById('confirmCancel');
-    const confirmDisconnect = document.getElementById('confirmDisconnect');
-
-    function openConfirmModal() {
-      confirmModal.hidden = false;
-      document.body.style.overflow = 'hidden';
-      requestAnimationFrame(() => confirmDisconnect?.focus());
-    }
-    function closeConfirmModal() {
-      confirmModal.hidden = true;
-      document.body.style.overflow = '';
-    }
-    confirmModal.addEventListener('click', (e) => {
-      if (e.target.hasAttribute('data-close')) closeConfirmModal();
-    });
-    window.addEventListener('keydown', (e) => {
-      if (!confirmModal.hidden && e.key === 'Escape') closeConfirmModal();
-    });
-
-    confirmCancel?.addEventListener('click', closeConfirmModal);
-    confirmDisconnect?.addEventListener('click', () => {
-      const connectBtn = document.getElementById('connectButton');
-      if (connectBtn && /disconnect/i.test((connectBtn.textContent || connectBtn.value || '').trim())) {
-        connectBtn.click();
-      }
-      closeConfirmModal();
-    });
-
-    const el = {
-      robot: document.getElementById('robotcam'),
-      robotOverlay: document.getElementById('robotcam_overlay'),
-      webcam: document.getElementById('webcam'),
-      webcamOverlay: document.getElementById('webcam_overlay'),
-  
-      btnMic: document.getElementById('btnMic'),
-      btnFace: document.getElementById('btnFace'),
-      btnAttend: document.getElementById('btnAttend'),
-      btnSpeaker: document.getElementById('btnSpeaker'),
-      btnSettings: document.getElementById('btnSettings'),
-      btnHangup: document.getElementById('btnHangup'),
-  
-      toggles: {
-        face: document.getElementById('webcamCheckbox'),
-        sendAudio: document.getElementById('sendAudioCheckbox'),
-        recvAudio: document.getElementById('receiveAudioCheckbox'),
-        attend: document.getElementById('attendClosestCheckbox'),
-      }
-    };
-
-
-
-      // --- Disconnect confirm modal
-      function performDisconnect() {
-        const connectBtn = document.getElementById('connectButton');
-        if (!connectBtn) return;
-        const txt = (connectBtn.textContent || connectBtn.value || '').trim().toLowerCase();
-
-        if (txt.includes('disconnect')) {
-          openConfirmModal();
-        } else {
-          openConnectModal();
-        }
-      }
-      el.btnHangup?.addEventListener('click', performDisconnect);
-
-  
-    // --- Canvas sizing
-    const sizeAll = () => {
-      if (el.robot && el.robotOverlay) fitCanvasTo(el.robot, el.robotOverlay);
-      if (el.webcam && el.webcamOverlay) fitCanvasTo(el.webcam, el.webcamOverlay);
-    };
-    window.addEventListener('load', sizeAll);
-    window.addEventListener('resize', sizeAll);
-  
-    // --- Button <-> Checkbox bridge
-    function wireButtonToCheckbox(btn, checkbox) {
-      if (!btn || !checkbox) return;
-      const setPressed = (on) => {
-        btn.setAttribute('aria-pressed', String(on));
-        btn.classList.toggle('is-off', !on);
-      };
-      setPressed(checkbox.checked);
-      btn.addEventListener('click', () => {
-        checkbox.checked = !checkbox.checked;
-        setPressed(checkbox.checked);
-        checkbox.dispatchEvent(new Event('input', { bubbles: true }));
-        checkbox.dispatchEvent(new Event('change', { bubbles: true }));
-      });
-      checkbox.addEventListener('change', () => setPressed(checkbox.checked));
-    }
-    wireButtonToCheckbox(el.btnMic,     el.toggles.sendAudio);
-    wireButtonToCheckbox(el.btnFace,    el.toggles.face);
-    wireButtonToCheckbox(el.btnAttend,  el.toggles.attend);
-    wireButtonToCheckbox(el.btnSpeaker, el.toggles.recvAudio);
-  
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => lucide.createIcons());
   </script>
 
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
-<script>
-  window.addEventListener('DOMContentLoaded', () => lucide.createIcons());
-</script>
-
-  
 </body>
 </html>
