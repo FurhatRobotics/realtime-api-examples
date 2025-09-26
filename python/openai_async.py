@@ -5,7 +5,7 @@ import os
 import argparse
 import signal
 from dotenv import load_dotenv
-from furhat_ws_api import AsyncFurhatClient, Events
+from furhat_realtime_api import AsyncFurhatClient, Events
 
 class Chatbot:
     def __init__(self, system_prompt: str):
@@ -70,7 +70,7 @@ class OpenAIAsyncFurhatBridge:
         self.shutting_down = False
         self.host = host
         
-        # Connect to the Furhat WebSocket API
+        # Connect to the Furhat Realtime API
         self.furhat = AsyncFurhatClient(host, auth_key=auth_key)
         self.chatbot = Chatbot(self.system_prompt)
         self.chatbot.set_client(self.client)
@@ -176,7 +176,7 @@ class OpenAIAsyncFurhatBridge:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", type=str, default="127.0.0.1", help="Furhat robot IP address")
-    parser.add_argument("--auth_key", type=str, default=None, help="Authentication key for WebSocket API")
+    parser.add_argument("--auth_key", type=str, default=None, help="Authentication key for Realtime API")
     args = parser.parse_args()
 
     asyncio.run(OpenAIAsyncFurhatBridge(args.host, auth_key=args.auth_key).run())

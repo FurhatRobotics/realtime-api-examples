@@ -4,7 +4,7 @@ import asyncio
 import websockets
 import signal
 from dotenv import load_dotenv
-from furhat_ws_api import AsyncFurhatClient, Events
+from furhat_realtime_api import AsyncFurhatClient, Events
 import argparse
 import logging
 
@@ -113,7 +113,7 @@ class OpenAIRealtimeFurhatBridge:
         self.stop_event.set()
 
     async def websocket_handler(self):
-        """Handle WebSocket connection"""
+        """Handle Realtime connection"""
         async with websockets.connect(
             self.url,
             additional_headers=self.headers
@@ -161,6 +161,6 @@ class OpenAIRealtimeFurhatBridge:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--host", type=str, default="127.0.0.1", help="Furhat robot IP address")
-    parser.add_argument("--auth_key", type=str, default=None, help="Authentication key for WebSocket API")
+    parser.add_argument("--auth_key", type=str, default=None, help="Authentication key for Realtime API")
     args = parser.parse_args()
     asyncio.run(OpenAIRealtimeFurhatBridge(args.host, auth_key=args.auth_key).run())
