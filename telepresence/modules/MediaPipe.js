@@ -12,6 +12,7 @@ export class MediaPipeManager {
         this.lastVideoTime = -1;
         this.results = undefined;
         this.sendingAnimations = false;
+        this.neutralPose = null;
     }
 
     async init() {
@@ -48,7 +49,7 @@ export class MediaPipeManager {
         if (!this.webcamRunning) return;
         this.webcamRunning = false;
         this.sendingAnimations = false;
-        CONFIG.state.userHeadposeHist.reset(0, 0, 0);
+        this.neutralPose = null;
         this.sendHeadpose(0, 0, 0);
     }
 
@@ -159,12 +160,7 @@ export class MediaPipeManager {
     }
 
     sendHeadpose(yaw, pitch, roll) {
-        CONFIG.eventBus.send("request.face.headpose", { 
-            yaw: yaw - CONFIG.state.userHeadposeHist.meanYaw(), 
-            pitch: pitch - CONFIG.state.userHeadposeHist.meanPitch(), 
-            roll: roll - CONFIG.state.userHeadposeHist.meanRoll(), 
-            relative: true 
-        });
+        CONFIG.eventBus.send("request.face.headpose", { yaw, pitch, roll, relative: true });
     }
 
     sendAnimation(results) {
@@ -174,11 +170,17 @@ export class MediaPipeManager {
 
         try {
             let [yaw, pitch, roll] = this.extractYawPitchRoll(results.facialTransformationMatrixes);
+            if (!this.neutralPose) {
+                this.neutralPose = { yaw, pitch, roll };
+            }
             CONFIG.state.userHeadpose.yaw = yaw;
             CONFIG.state.userHeadpose.pitch = pitch;
             CONFIG.state.userHeadpose.roll = roll;
-            CONFIG.state.userHeadposeHist.add(yaw, pitch, roll);
-            this.sendHeadpose(yaw, pitch, roll);
+            this.sendHeadpose(
+                yaw - this.neutralPose.yaw,
+                pitch - this.neutralPose.pitch,
+                roll - this.neutralPose.roll
+            );
         } catch (error) {
         }
         
@@ -190,12 +192,9 @@ export class MediaPipeManager {
                 const formattedCategoryName = category.categoryName.replace(/([a-z])([A-Z])/g, '$1_$2').toUpperCase();
                 categoriesRecord[formattedCategoryName] = category.score;
                 const nameLower = category.categoryName.toLowerCase();
-                if (
-                    nameLower.includes("brow") ||
-                    nameLower.includes("smile") ||
-                    (!CONFIG.state.userSpeaking && (nameLower.includes("mouth") || nameLower.includes("jaw")))
-                ) {
-
+                const isMouthOrJaw = nameLower.includes("mouth") || nameLower.includes("jaw");
+                const isSquint = nameLower.includes("squint");
+                if (!isSquint && (!isMouthOrJaw || !CONFIG.state.userSpeaking)) {
                     params[formattedCategoryName] = category.score * CONFIG.face.paramAmplification;
                 }
             });

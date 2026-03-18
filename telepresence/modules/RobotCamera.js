@@ -90,8 +90,6 @@ export class RobotCameraManager {
     }
 
     attendUser(userId) {
-        CONFIG.state.userHeadposeHist.reset(CONFIG.state.userHeadpose.yaw, CONFIG.state.userHeadpose.pitch, CONFIG.state.userHeadpose.roll);
-        
         // Clear the attend closest checkbox when manually attending users
         if (userId !== "closest") {
             this.clearAttendClosestCheckbox();

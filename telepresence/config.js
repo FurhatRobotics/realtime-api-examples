@@ -5,42 +5,6 @@ import { SendAudioManager } from './modules/SendAudioManager.js';
 import { ReceiveAudioManager } from './modules/ReceiveAudioManager.js';
 
 
-export class UserHeadPoseHist {
-    constructor() {
-        this.reset(0, 0, 0);
-    }
-
-    add(yaw, pitch, roll) {
-        this.yaw.push(yaw);
-        this.pitch.push(pitch);
-        this.roll.push(roll);
-        if (this.yaw.length > 50) {
-            this.yaw.shift();
-            this.pitch.shift();
-            this.roll.shift();
-        }
-    }
-
-    reset(yaw, pitch, roll) {
-        this.yaw = Array.from({ length: 50 }, () => yaw);
-        this.pitch = Array.from({ length: 50 }, () => pitch);
-        this.roll = Array.from({ length: 50 }, () => roll);
-    }
-
-    meanYaw() {
-        return this.yaw.reduce((a, b) => a + b) / this.yaw.length;
-    }
-
-    meanPitch() {
-        return this.pitch.reduce((a, b) => a + b) / this.pitch.length;
-    }
-
-    meanRoll() {
-        return this.roll.reduce((a, b) => a + b) / this.roll.length;
-    }
-
-}
-
 export const CONFIG = {
     wsapi: {
         port: 9000,
@@ -57,8 +21,8 @@ export const CONFIG = {
         controlWidth: 340
     },
     eventThrottlers: {
-        "action.attend.headpose": 100,
-        "action.face.params": 20
+        "request.face.headpose": 100,
+        "request.face.params": 20
     },
     face: {
         paramAmplification: 1.0
@@ -66,7 +30,6 @@ export const CONFIG = {
     state: {
         userSpeaking: false,
         userHeadpose: {yaw: 0, pitch: 0, roll: 0},
-        userHeadposeHist: new UserHeadPoseHist(),
         vadEnergy: 0
     },
     eventBus: new EventBus(),
